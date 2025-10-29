@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.snakegame.controller.HighScoreController">
+   <top>
+      <HBox alignment="CENTER" spacing="20.0" styleClass="header">
+         <children>
+            <Label text="BẢNG XẾP HẠNG" textFill="#2E8B57">
+               <font>
+                  <Font name="Arial Black" size="32.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </HBox>
+   </top>
+   <center>
+      <VBox alignment="CENTER" spacing="20.0">
+         <children>
+            <HBox alignment="CENTER" spacing="20.0">
+               <children>
+                  <Button fx:id="allScoresButton" mnemonicParsing="false" onAction="#showAllScores" styleClass="filter-button" text="TẤT CẢ" />
+                  <Button fx:id="easyScoresButton" mnemonicParsing="false" onAction="#showEasyScores" styleClass="filter-button" text="DỄ" />
+                  <Button fx:id="mediumScoresButton" mnemonicParsing="false" onAction="#showMediumScores" styleClass="filter-button" text="TRUNG BÌNH" />
+                  <Button fx:id="hardScoresButton" mnemonicParsing="false" onAction="#showHardScores" styleClass="filter-button" text="KHÓ" />
+               </children>
+            </HBox>
+            
+            <ScrollPane fx:id="scoreScrollPane" fitToWidth="true" maxHeight="400.0" prefHeight="400.0" prefWidth="700.0">
+               <content>
+                  <VBox fx:id="scoreContainer" spacing="5.0" />
+               </content>
+            </ScrollPane>
+         </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </VBox>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER" spacing="20.0" styleClass="footer">
+         <children>
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#backToMenu" styleClass="menu-button" text="QUAY LẠI MENU" />
+         </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>
