@@ -212,7 +212,8 @@ public class GameController {
     }
 
     private void drawGame() {
-        gc.clearRect(0, 0, gameCanvas.getWidth(), gameCanvas.getHeight());
+        // Draw checkerboard background so cells are easy to distinguish
+        drawCheckerboard(CELL_SIZE);
 
         // Draw snake P1
         var snake = gameBoard.getSnake();
@@ -269,6 +270,23 @@ public class GameController {
         gc.setLineWidth(1);
         gc.fillOval(foodX + 2, foodY + 2, CELL_SIZE - 4, CELL_SIZE - 4);
         gc.strokeOval(foodX + 2, foodY + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+    }
+
+    // Draw a subtle checkerboard background using two close colors so the grid is visible
+    private void drawCheckerboard(double cellSize) {
+        if (gc == null) return;
+        int cols = (gameBoard != null) ? gameBoard.getBoardWidth() : BOARD_WIDTH;
+        int rows = (gameBoard != null) ? gameBoard.getBoardHeight() : BOARD_HEIGHT;
+
+        Color color1 = Color.web("#2f3b43"); // darker cell
+        Color color2 = Color.web("#33464f"); // slightly lighter cell
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                gc.setFill(((x + y) % 2 == 0) ? color1 : color2);
+                gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+        }
     }
 
     private void updateUI() {
@@ -333,7 +351,8 @@ public class GameController {
         }
     }
     private void drawGameScaled(double cellSize) {
-        gc.clearRect(0, 0, gameCanvas.getWidth(), gameCanvas.getHeight());
+        // Draw checkerboard background scaled to the computed cell size
+        drawCheckerboard(cellSize);
 
         var snake = gameBoard.getSnake();
         for (int i = 0; i < snake.size(); i++) {
