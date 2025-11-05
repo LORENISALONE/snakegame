@@ -12,21 +12,22 @@ public class GameBoard {
 
     public enum Difficulty {
         EASY(200), MEDIUM(150), HARD(100);
-        
+
         private final int speed;
-        
+
         Difficulty(int speed) {
             this.speed = speed;
         }
-        
+
         public int getSpeed() {
             return speed;
         }
     }
 
+
     private static final int BOARD_WIDTH = 20;
     private static final int BOARD_HEIGHT = 20;
-    
+
     private List<Point> snake;
     private List<Point> snake2; // optional for 2P
     private Point food;
@@ -79,9 +80,9 @@ public class GameBoard {
     public void setDirection(Direction newDirection) {
         // Prevent snake from going backwards
         if ((direction == Direction.UP && newDirection != Direction.DOWN) ||
-            (direction == Direction.DOWN && newDirection != Direction.UP) ||
-            (direction == Direction.LEFT && newDirection != Direction.RIGHT) ||
-            (direction == Direction.RIGHT && newDirection != Direction.LEFT)) {
+                (direction == Direction.DOWN && newDirection != Direction.UP) ||
+                (direction == Direction.LEFT && newDirection != Direction.RIGHT) ||
+                (direction == Direction.RIGHT && newDirection != Direction.LEFT)) {
             nextDirection = newDirection;
         }
     }
@@ -89,9 +90,9 @@ public class GameBoard {
     public void setDirectionP2(Direction newDirection) {
         if (!twoPlayer) return;
         if ((direction2 == Direction.UP && newDirection != Direction.DOWN) ||
-            (direction2 == Direction.DOWN && newDirection != Direction.UP) ||
-            (direction2 == Direction.LEFT && newDirection != Direction.RIGHT) ||
-            (direction2 == Direction.RIGHT && newDirection != Direction.LEFT)) {
+                (direction2 == Direction.DOWN && newDirection != Direction.UP) ||
+                (direction2 == Direction.LEFT && newDirection != Direction.RIGHT) ||
+                (direction2 == Direction.RIGHT && newDirection != Direction.LEFT)) {
             nextDirection2 = newDirection;
         }
     }
@@ -108,7 +109,23 @@ public class GameBoard {
             direction2 = nextDirection2;
             Point head2 = snake2.get(0);
             newHead2 = new Point(head2.getX(), head2.getY());
+
+            switch (direction2) {
+                case UP:
+                    newHead2.setY(newHead2.getY() - 1);
+                    break;
+                case DOWN:
+                    newHead2.setY(newHead2.getY() + 1);
+                    break;
+                case LEFT:
+                    newHead2.setX(newHead2.getX() - 1);
+                    break;
+                case RIGHT:
+                    newHead2.setX(newHead2.getX() + 1);
+                    break;
+            }
         }
+
 
         // Move head based on direction
         switch (direction) {
@@ -128,14 +145,14 @@ public class GameBoard {
 
         // Check wall collision
         if (newHead.getX() < 0 || newHead.getX() >= BOARD_WIDTH ||
-            newHead.getY() < 0 || newHead.getY() >= BOARD_HEIGHT) {
+                newHead.getY() < 0 || newHead.getY() >= BOARD_HEIGHT) {
             gameOver = true;
             return;
         }
 
         if (twoPlayer) {
             if (newHead2.getX() < 0 || newHead2.getX() >= BOARD_WIDTH ||
-                newHead2.getY() < 0 || newHead2.getY() >= BOARD_HEIGHT) {
+                    newHead2.getY() < 0 || newHead2.getY() >= BOARD_HEIGHT) {
                 gameOver = true;
                 return;
             }

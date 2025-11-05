@@ -20,30 +20,30 @@ import javafx.util.Duration;
 import java.io.IOException;
 
 public class GameController {
-    
+
     @FXML
     private Canvas gameCanvas;
-    
+
     @FXML
     private Label scoreLabel;
-    
+
     @FXML
     private Label scoreLabel2;
-    
+
     @FXML
     private Label difficultyLabel;
-    
+
     @FXML
     private Button pauseButton;
-    
+
     @FXML
     private Button menuButton;
-    
+
     private GameBoard gameBoard;
     private Timeline gameLoop;
     private boolean isPaused = false;
     private GraphicsContext gc;
-    
+
     private static final int CELL_SIZE = 25;
     private static final int BOARD_WIDTH = 20;
     private static final int BOARD_HEIGHT = 20;
@@ -51,23 +51,37 @@ public class GameController {
     public void initializeGame(GameBoard.Difficulty difficulty) {
         this.gameBoard = new GameBoard(difficulty);
         this.gc = gameCanvas.getGraphicsContext2D();
-        
+
         // Set up canvas size
-        gameCanvas.setWidth(BOARD_WIDTH * CELL_SIZE);
-        gameCanvas.setHeight(BOARD_HEIGHT * CELL_SIZE);
-        
+        double width = gameCanvas.getWidth();
+        double height = gameCanvas.getHeight();
+
+// Tính lại kích thước mỗi ô để phủ hết khung
+        double cellWidth = width / BOARD_WIDTH;
+        double cellHeight = height / BOARD_HEIGHT;
+        System.out.println(cellHeight);
+        System.out.println(cellWidth);
+        double cellSize = Math.min(cellWidth, cellHeight);
+
+// Cập nhật lại CELL_SIZE tạm thời
+        gc = gameCanvas.getGraphicsContext2D();
+
+// Vẽ game với kích thước ô mới
+        drawGameScaled(cellSize);
+
+
         // Update UI
         updateUI();
-        
+
         // Set up game loop
         setupGameLoop();
-        
+
         // Set up keyboard controls
         setupKeyboardControls();
 
         // Draw initial frame
         drawGame();
-        
+
         // Ensure focus and scene-level key handling after scene is set
         Platform.runLater(() -> {
             Scene scene = gameCanvas.getScene();
@@ -86,9 +100,10 @@ public class GameController {
             if (menuButton != null) menuButton.setFocusTraversable(false);
             gameCanvas.requestFocus();
         });
-        
+
         // Start the game
         gameLoop.play();
+
     }
 
     public void initializeGame(GameBoard.Difficulty difficulty, boolean twoPlayer) {
@@ -140,7 +155,7 @@ public class GameController {
                 gameBoard.update();
                 drawGame();
                 updateUI();
-                
+
                 if (gameBoard.isGameOver()) {
                     gameLoop.stop();
                     showGameOver();
@@ -198,14 +213,14 @@ public class GameController {
 
     private void drawGame() {
         gc.clearRect(0, 0, gameCanvas.getWidth(), gameCanvas.getHeight());
-        
+
         // Draw snake P1
         var snake = gameBoard.getSnake();
         for (int i = 0; i < snake.size(); i++) {
             var segment = snake.get(i);
             int x = segment.getX() * CELL_SIZE;
             int y = segment.getY() * CELL_SIZE;
-            
+
             if (i == 0) {
                 // Draw head
                 gc.setFill(Color.web("#228B22"));
@@ -217,11 +232,11 @@ public class GameController {
                 gc.setStroke(Color.web("#3CB371"));
                 gc.setLineWidth(1);
             }
-            
+
             gc.fillRoundRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2, 5, 5);
             gc.strokeRoundRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2, 5, 5);
         }
-        
+
         // Draw snake P2 if enabled
         var snake2 = gameBoard.getSnake2();
         if (snake2 != null) {
@@ -229,7 +244,7 @@ public class GameController {
                 var segment = snake2.get(i);
                 int x = segment.getX() * CELL_SIZE;
                 int y = segment.getY() * CELL_SIZE;
-                
+
                 if (i == 0) {
                     gc.setFill(Color.web("#1E90FF"));
                     gc.setStroke(Color.web("#87CEFA"));
@@ -243,12 +258,12 @@ public class GameController {
                 gc.strokeRoundRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2, 5, 5);
             }
         }
-        
+
         // Draw food
         var food = gameBoard.getFood();
         int foodX = food.getX() * CELL_SIZE;
         int foodY = food.getY() * CELL_SIZE;
-        
+
         gc.setFill(Color.web("#DC143C"));
         gc.setStroke(Color.web("#FF6347"));
         gc.setLineWidth(1);
@@ -293,7 +308,7 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Menu.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            
+
             Stage stage = (Stage) menuButton.getScene().getWindow();
             stage.setScene(scene);
         } catch (IOException e) {
@@ -306,14 +321,68 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameOver.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            
+
             GameOverController gameOverController = loader.getController();
             gameOverController.setGameData(gameBoard.getScore(), gameBoard.getDifficulty());
-            
-            Stage stage = (Stage) menuButton.getScene().getWindow();
+
+            // Lấy stage từ gameCanvas (luôn tồn tại)
+            Stage stage = (Stage) gameCanvas.getScene().getWindow();
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+    private void drawGameScaled(double cellSize) {
+        gc.clearRect(0, 0, gameCanvas.getWidth(), gameCanvas.getHeight());
+
+        var snake = gameBoard.getSnake();
+        for (int i = 0; i < snake.size(); i++) {
+            var segment = snake.get(i);
+            int x = segment.getX();
+            int y = segment.getY();
+
+            if (i == 0) {
+                gc.setFill(Color.web("#228B22"));
+                gc.setStroke(Color.web("#32CD32"));
+                gc.setLineWidth(2);
+            } else {
+                gc.setFill(Color.web("#2E8B57"));
+                gc.setStroke(Color.web("#3CB371"));
+                gc.setLineWidth(1);
+            }
+            gc.fillRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
+            gc.strokeRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
+        }
+
+        // Rắn 2 nếu có
+        var snake2 = gameBoard.getSnake2();
+        if (snake2 != null) {
+            for (int i = 0; i < snake2.size(); i++) {
+                var segment = snake2.get(i);
+                int x = segment.getX();
+                int y = segment.getY();
+
+                if (i == 0) {
+                    gc.setFill(Color.web("#1E90FF"));
+                    gc.setStroke(Color.web("#87CEFA"));
+                    gc.setLineWidth(2);
+                } else {
+                    gc.setFill(Color.web("#4169E1"));
+                    gc.setStroke(Color.web("#87CEFA"));
+                    gc.setLineWidth(1);
+                }
+                gc.fillRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
+                gc.strokeRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
+            }
+        }
+
+        var food = gameBoard.getFood();
+        gc.setFill(Color.web("#DC143C"));
+        gc.setStroke(Color.web("#FF6347"));
+        gc.setLineWidth(1);
+        gc.fillOval(food.getX() * cellSize + 2, food.getY() * cellSize + 2, cellSize - 4, cellSize - 4);
+        gc.strokeOval(food.getX() * cellSize + 2, food.getY() * cellSize + 2, cellSize - 4, cellSize - 4);
+    }
+
+
 }
