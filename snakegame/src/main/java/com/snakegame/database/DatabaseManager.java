@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
-    private static final String URL = "jdbc:mysql://localhost:3306/snake_game?useSSL=false&serverTimezone=UTC";
+    private static final String URL = "jdbc:mysql://localhost:3307/snake_game?useSSL=false&serverTimezone=UTC";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "1";
+    private static final String PASSWORD = "12345678";
     
     private static DatabaseManager instance;
     private Connection connection;
