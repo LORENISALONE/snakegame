@@ -42,6 +42,8 @@ public class GameBoard {
     private int score2;
     private Difficulty difficulty;
     private Random random;
+    private List<Point> wall;
+
 
     public GameBoard(Difficulty difficulty) {
         this(difficulty, false);
@@ -72,6 +74,10 @@ public class GameBoard {
         score = 0;
         score2 = 0;
         generateFood();
+        if (twoPlayer) {
+            createWall();
+        }
+
     }
 
     public void reset() {
@@ -174,6 +180,16 @@ public class GameBoard {
             gameOver = true;
             return;
         }
+        // Collision with wall
+        if (twoPlayer && wall != null && wall.contains(newHead)) {
+            gameOver = true;
+            return;
+        }
+        if (twoPlayer && wall != null && wall.contains(newHead2)) {
+            gameOver = true;
+            return;
+        }
+
 
         if (twoPlayer) {
             // P2 self collision
@@ -213,7 +229,12 @@ public class GameBoard {
     private void generateFood() {
         do {
             food = new Point(random.nextInt(BOARD_WIDTH), random.nextInt(BOARD_HEIGHT));
-        } while (snake.contains(food) || (twoPlayer && snake2 != null && snake2.contains(food)));
+        } while (
+                snake.contains(food) ||
+                        (twoPlayer && snake2 != null && snake2.contains(food)) ||
+                        (twoPlayer && wall != null && wall.contains(food))
+        );
+
     }
 
     public List<Point> getSnake() {
@@ -293,4 +314,16 @@ public class GameBoard {
             return x * 31 + y;
         }
     }
+    private void createWall() {
+        wall = new ArrayList<>();
+        int midX = BOARD_WIDTH / 2;
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            wall.add(new Point(midX, y));
+        }
+    }
+    public List<Point> getWall() {
+        return wall;
+    }
+
+
 }
