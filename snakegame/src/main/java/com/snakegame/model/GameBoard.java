@@ -1,3 +1,4 @@
+// java
 package com.snakegame.model;
 
 import javafx.scene.paint.Color;
@@ -124,6 +125,10 @@ public class GameBoard {
                     newHead2.setX(newHead2.getX() + 1);
                     break;
             }
+
+            // Wrap P2 head around board edges (toroidal)
+            newHead2.setX((newHead2.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
+            newHead2.setY((newHead2.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
         }
 
 
@@ -143,20 +148,9 @@ public class GameBoard {
                 break;
         }
 
-        // Check wall collision
-        if (newHead.getX() < 0 || newHead.getX() >= BOARD_WIDTH ||
-                newHead.getY() < 0 || newHead.getY() >= BOARD_HEIGHT) {
-            gameOver = true;
-            return;
-        }
-
-        if (twoPlayer) {
-            if (newHead2.getX() < 0 || newHead2.getX() >= BOARD_WIDTH ||
-                    newHead2.getY() < 0 || newHead2.getY() >= BOARD_HEIGHT) {
-                gameOver = true;
-                return;
-            }
-        }
+        // Wrap main head around board edges (toroidal)
+        newHead.setX((newHead.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
+        newHead.setY((newHead.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
 
         // Determine if we will eat food this move
         boolean willEat = newHead.equals(food);
@@ -219,7 +213,7 @@ public class GameBoard {
     private void generateFood() {
         do {
             food = new Point(random.nextInt(BOARD_WIDTH), random.nextInt(BOARD_HEIGHT));
-        } while (snake.contains(food));
+        } while (snake.contains(food) || (twoPlayer && snake2 != null && snake2.contains(food)));
     }
 
     public List<Point> getSnake() {
