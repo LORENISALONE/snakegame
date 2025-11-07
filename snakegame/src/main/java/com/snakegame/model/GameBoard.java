@@ -277,6 +277,15 @@ public class GameBoard {
         return BOARD_HEIGHT;
     }
 
+    // Expose current directions so controller can pick the right head image
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public Direction getDirection2() {
+        return direction2;
+    }
+
     public static class Point {
         private int x, y;
 
