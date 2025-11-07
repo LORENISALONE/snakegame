@@ -261,6 +261,7 @@ public class GameController {
         }
 
         // Draw food
+        // Draw food
         var food = gameBoard.getFood();
         int foodX = food.getX() * CELL_SIZE;
         int foodY = food.getY() * CELL_SIZE;
@@ -270,6 +271,19 @@ public class GameController {
         gc.setLineWidth(1);
         gc.fillOval(foodX + 2, foodY + 2, CELL_SIZE - 4, CELL_SIZE - 4);
         gc.strokeOval(foodX + 2, foodY + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+
+// Draw wall (for 2-player mode)
+        var wall = gameBoard.getWall();
+        if (wall != null) {
+            gc.setFill(Color.web("#444444"));
+            gc.setStroke(Color.web("#666666"));
+            gc.setLineWidth(1);
+            for (var block : wall) {
+                gc.fillRect(block.getX() * CELL_SIZE, block.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                gc.strokeRect(block.getX() * CELL_SIZE, block.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+        }
+
     }
 
     // Draw a subtle checkerboard background using two close colors so the grid is visible
