@@ -18,6 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,21 +27,10 @@ public class GameController {
 
     @FXML
     private Canvas gameCanvas;
-
     @FXML
-    private Label scoreLabel;
-
+    private Label scoreLabel, scoreLabel2, difficultyLabel;
     @FXML
-    private Label scoreLabel2;
-
-    @FXML
-    private Label difficultyLabel;
-
-    @FXML
-    private Button pauseButton;
-
-    @FXML
-    private Button menuButton;
+    private Button pauseButton, menuButton, skinButton;
 
     private GameBoard gameBoard;
     private Timeline gameLoop;
@@ -51,177 +41,132 @@ public class GameController {
     private static final int BOARD_WIDTH = 20;
     private static final int BOARD_HEIGHT = 20;
 
-    // Images
-    private Map<String, Image> images = new HashMap<>();
+    private String[] availableSkins = new String[]{"default"};
+    private int currentSkinIndex = 0;
+    private final Map<String, Image> images = new HashMap<>();
 
+    // ========== INIT ==========
     public void initializeGame(GameBoard.Difficulty difficulty) {
+        detectAvailableSkins();
         this.gameBoard = new GameBoard(difficulty);
         this.gc = gameCanvas.getGraphicsContext2D();
-
-        loadAssets();
-
-        // Compute dynamic cell size to fill canvas
-        double width = gameCanvas.getWidth();
-        double height = gameCanvas.getHeight();
-        double cw = width / BOARD_WIDTH;
-        double ch = height / BOARD_HEIGHT;
-        cellSize = Math.min(cw, ch);
-
-        drawGameScaled(cellSize);
-
-        // Update UI
-        updateUI();
-
-        // Set up game loop
-        setupGameLoop();
-
-        // Set up keyboard controls
-        setupKeyboardControls();
-
-        // Draw initial frame
-        drawGame();
-
-        // Ensure focus and scene-level key handling after scene is set
-        Platform.runLater(() -> {
-            Scene scene = gameCanvas.getScene();
-            if (scene != null) {
-                // Use event filter so SPACE is caught before buttons consume it
-                scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
-                scene.addEventFilter(KeyEvent.KEY_TYPED, e -> {
-                    if (" ".equals(e.getCharacter())) {
-                        togglePause();
-                        e.consume();
-                    }
-                });
-            }
-            // Avoid SPACE activating buttons
-            if (pauseButton != null) pauseButton.setFocusTraversable(false);
-            if (menuButton != null) menuButton.setFocusTraversable(false);
-            gameCanvas.requestFocus();
-        });
-
-        // Start the game
-        gameLoop.play();
-
+        setupGame(difficulty);
     }
 
     public void initializeGame(GameBoard.Difficulty difficulty, boolean twoPlayer) {
+        detectAvailableSkins();
         this.gameBoard = new GameBoard(difficulty, twoPlayer);
         this.gc = gameCanvas.getGraphicsContext2D();
+        setupGame(difficulty);
+    }
 
+    private void setupGame(GameBoard.Difficulty difficulty) {
         loadAssets();
-
-        // Set up canvas size
-        gameCanvas.setWidth(BOARD_WIDTH * cellSize);
-        gameCanvas.setHeight(BOARD_HEIGHT * cellSize);
-
-        // Update UI
         updateUI();
-
-        // Set up game loop
-        setupGameLoop();
-
-        // Set up keyboard controls
         setupKeyboardControls();
-
-        // Draw initial frame
+        setupGameLoop();
         drawGame();
 
-        // Ensure focus and scene-level key handling after scene is set
+        // ✅ focus đảm bảo hoạt động cả khi Stage vừa hiển thị
         Platform.runLater(() -> {
             Scene scene = gameCanvas.getScene();
             if (scene != null) {
-                // Use event filter so SPACE is caught before buttons consume it
-                scene.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
-                scene.addEventFilter(KeyEvent.KEY_TYPED, e -> {
-                    if (" ".equals(e.getCharacter())) {
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+                    if (e.getCode() == KeyCode.SPACE) {
                         togglePause();
                         e.consume();
+                    } else {
+                        handleKeyPress(e);
                     }
                 });
             }
-            // Avoid SPACE activating buttons
-            if (pauseButton != null) pauseButton.setFocusTraversable(false);
-            if (menuButton != null) menuButton.setFocusTraversable(false);
+
+            // Ngăn button chiếm focus
+            for (Button b : new Button[]{pauseButton, menuButton, skinButton}) {
+                if (b != null) b.setFocusTraversable(false);
+            }
+
+            // Focus vào Canvas sau khi Stage load
+            gameCanvas.setFocusTraversable(true);
             gameCanvas.requestFocus();
         });
 
-        // Start the game
         gameLoop.play();
     }
 
+    // ========== ASSETS ==========
     private void loadAssets() {
-        // Load images from assets package (in resources/classpath) via resource stream
-        String base = "/com/snakegame/assets/";
-        String[] names = new String[]{
-                "apple.png",
-                "head_up.png",
-                "head_down.png",
-                "head_left.png",
-                "head_right.png",
-                "tail_up.png",
-                "tail_down.png",
-                "tail_left.png",
-                "tail_right.png",
-                "body_horizontal.png",
-                "body_vertical.png",
-                "body_topleft.png",
-                "body_topright.png",
-                "body_bottomleft.png",
-                "body_bottomright.png"
+        images.clear();
+        String[] names = {
+                "apple.png", "head_up.png", "head_down.png", "head_left.png", "head_right.png",
+                "tail_up.png", "tail_down.png", "tail_left.png", "tail_right.png",
+                "body_horizontal.png", "body_vertical.png",
+                "body_topleft.png", "body_topright.png", "body_bottomleft.png", "body_bottomright.png"
         };
+
+        String skinPath = (currentSkinIndex > 0)
+                ? "/com/snakegame/assets/skin/" + availableSkins[currentSkinIndex] + "/"
+                : "/com/snakegame/assets/";
 
         for (String n : names) {
             Image img = null;
-            // Try classpath resource first (works when assets are in resources or inside jar)
-            try {
-                var is = getClass().getResourceAsStream(base + n);
-                if (is != null) {
-                    img = new Image(is);
+            try (var is = getClass().getResourceAsStream(skinPath + n)) {
+                if (is != null) img = new Image(is);
+                else {
+                    var def = getClass().getResourceAsStream("/com/snakegame/assets/" + n);
+                    if (def != null) img = new Image(def);
                 }
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
 
-            // Fallback: try filesystem paths (useful when running from IDE and assets are under src/main/java or src/main/resources)
             if (img == null) {
-                String[] fallbackPaths = new String[]{
-                        "src/main/resources/com/snakegame/assets/" + n,
-                        "src/main/java/com/snakegame/assets/" + n,
-                        "./src/main/resources/com/snakegame/assets/" + n,
-                        "./src/main/java/com/snakegame/assets/" + n
-                };
-                for (String p : fallbackPaths) {
-                    try {
-                        // Use file: URL so Image can load from filesystem
-                        Image tryImg = new Image("file:" + p);
-                        if (!tryImg.isError()) {
-                            img = tryImg;
-                            break;
-                        }
-                    } catch (Exception ignored) {
-                    }
-                }
+                File f1 = new File("src/main/resources/com/snakegame/assets/skin/" + availableSkins[currentSkinIndex] + "/" + n);
+                File f2 = new File("src/main/resources/com/snakegame/assets/" + n);
+                if (f1.exists()) img = new Image("file:" + f1.getPath());
+                else if (f2.exists()) img = new Image("file:" + f2.getPath());
             }
 
-            if (img != null) {
-                images.put(n, img);
-            } else {
-                System.out.println("Could not load asset: " + n + " from classpath or fallback paths");
-            }
+            if (img != null) images.put(n, img);
+            else System.out.println("⚠️ Không thể tải ảnh: " + n);
         }
     }
 
+    private void detectAvailableSkins() {
+        File skinDir = new File("src/main/resources/com/snakegame/assets/skin");
+        if (!skinDir.exists()) skinDir = new File("src/main/java/com/snakegame/assets/skin");
+
+        if (skinDir.exists() && skinDir.isDirectory()) {
+            var dirs = skinDir.listFiles(File::isDirectory);
+            if (dirs != null && dirs.length > 0) {
+                availableSkins = new String[dirs.length + 1];
+                availableSkins[0] = "default";
+                for (int i = 0; i < dirs.length; i++) availableSkins[i + 1] = dirs[i].getName();
+                return;
+            }
+        }
+        availableSkins = new String[]{"default"};
+    }
+
+    @FXML
+    private void changeSkin() {
+        detectAvailableSkins();
+        currentSkinIndex = (currentSkinIndex + 1) % availableSkins.length;
+        loadAssets();
+        drawGame();
+        skinButton.setText("SKIN: " + availableSkins[currentSkinIndex]);
+
+        // ✅ đảm bảo sau khi đổi skin vẫn điều khiển được
+        Platform.runLater(() -> gameCanvas.requestFocus());
+    }
+
+    // ========== LOOP ==========
     private void setupGameLoop() {
         gameLoop = new Timeline(new KeyFrame(Duration.millis(gameBoard.getDifficulty().getSpeed()), e -> {
             if (!isPaused && !gameBoard.isGameOver()) {
                 gameBoard.update();
-
-                // Dùng Platform.runLater để render trên JavaFX thread → tránh lệch frame
                 Platform.runLater(() -> {
                     drawGame();
                     updateUI();
                 });
-
                 if (gameBoard.isGameOver()) {
                     gameLoop.stop();
                     Platform.runLater(this::showGameOver);
@@ -231,257 +176,139 @@ public class GameController {
         gameLoop.setCycleCount(Timeline.INDEFINITE);
     }
 
-
+    // ========== CONTROLS ==========
     private void setupKeyboardControls() {
         gameCanvas.setFocusTraversable(true);
         gameCanvas.setOnKeyPressed(this::handleKeyPress);
     }
 
-    private void handleKeyPress(KeyEvent event) {
-        // SPACE should work regardless of game state
-        if (event.getCode() == KeyCode.SPACE) {
-            togglePause();
-            return;
-        }
-
+    private void handleKeyPress(KeyEvent e) {
         if (gameBoard.isGameOver()) return;
 
-        switch (event.getCode()) {
-            case W:
-                gameBoard.setDirection(GameBoard.Direction.UP);
-                break;
-            case S:
-                gameBoard.setDirection(GameBoard.Direction.DOWN);
-                break;
-            case A:
-                gameBoard.setDirection(GameBoard.Direction.LEFT);
-                break;
-            case D:
-                gameBoard.setDirection(GameBoard.Direction.RIGHT);
-                break;
-            case UP:
-                if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.UP);
-                else gameBoard.setDirection(GameBoard.Direction.UP);
-                break;
-            case DOWN:
-                if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.DOWN);
-                else gameBoard.setDirection(GameBoard.Direction.DOWN);
-                break;
-            case LEFT:
-                if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.LEFT);
-                else gameBoard.setDirection(GameBoard.Direction.LEFT);
-                break;
-            case RIGHT:
-                if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.RIGHT);
-                else gameBoard.setDirection(GameBoard.Direction.RIGHT);
-                break;
+        switch (e.getCode()) {
+            case W -> gameBoard.setDirection(GameBoard.Direction.UP);
+            case S -> gameBoard.setDirection(GameBoard.Direction.DOWN);
+            case A -> gameBoard.setDirection(GameBoard.Direction.LEFT);
+            case D -> gameBoard.setDirection(GameBoard.Direction.RIGHT);
+            case UP -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.UP); }
+            case DOWN -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.DOWN); }
+            case LEFT -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.LEFT); }
+            case RIGHT -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.RIGHT); }
         }
     }
 
+    // ========== DRAW ==========
     private void drawGame() {
         if (gc == null) return;
-
-        // Recompute cell size in case canvas resized
-        double width = gameCanvas.getWidth();
-        double height = gameCanvas.getHeight();
-        double cw = width / gameBoard.getBoardWidth();
-        double ch = height / gameBoard.getBoardHeight();
+        double cw = gameCanvas.getWidth() / gameBoard.getBoardWidth();
+        double ch = gameCanvas.getHeight() / gameBoard.getBoardHeight();
         cellSize = Math.min(cw, ch);
 
-        // Draw checkerboard
         drawCheckerboard(cellSize);
+        drawFood();
+        drawSnake(gameBoard.getSnake(), gameBoard.getDirection(), Color.web("#2E8B57"));
+        if (gameBoard.getSnake2() != null)
+            drawSnake(gameBoard.getSnake2(), gameBoard.getDirection2(), Color.web("#4169E1"));
+        drawWall();
+    }
 
-        // Draw food as image if available
-        var food = gameBoard.getFood();
-        double fx = food.getX() * cellSize;
-        double fy = food.getY() * cellSize;
-        Image apple = images.get("apple.png");
-        if (apple != null) {
-            gc.drawImage(apple, fx + 1, fy + 1, cellSize - 2, cellSize - 2);
-        } else {
-            gc.setFill(Color.web("#DC143C"));
-            gc.fillOval(fx + 2, fy + 2, cellSize - 4, cellSize - 4);
-        }
-
-        // Draw snake P1 using images
-        var snake = gameBoard.getSnake();
-        for (int i = 0; i < snake.size(); i++) {
-            var segment = snake.get(i);
-            double x = segment.getX() * cellSize;
-            double y = segment.getY() * cellSize;
-
-            if (i == 0) {
-                // head based on direction
-                Image headImg = null;
-                switch (gameBoard.getDirection()) {
-                    case UP: headImg = images.get("head_up.png"); break;
-                    case DOWN: headImg = images.get("head_down.png"); break;
-                    case LEFT: headImg = images.get("head_left.png"); break;
-                    case RIGHT: headImg = images.get("head_right.png"); break;
-                }
-                if (headImg != null) gc.drawImage(headImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                else {
-                    gc.setFill(Color.web("#228B22"));
-                    gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                }
-            } else if (i == snake.size() - 1) {
-                // tail: choose orientation based on previous segment
-                var prev = snake.get(i - 1);
-                Image tailImg = chooseTailImage(prev, segment);
-                if (tailImg != null) gc.drawImage(tailImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                else {
-                    gc.setFill(Color.web("#2E8B57"));
-                    gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                }
-            } else {
-                // body: choose between straight or corner
-                var prev = snake.get(i - 1);
-                var next = snake.get(i + 1);
-                Image bodyImg = chooseBodyImage(prev, segment, next);
-                if (bodyImg != null) gc.drawImage(bodyImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                else {
-                    gc.setFill(Color.web("#2E8B57"));
-                    gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                }
-            }
-        }
-
-        // Draw snake P2 if enabled
-        var snake2 = gameBoard.getSnake2();
-        if (snake2 != null) {
-            for (int i = 0; i < snake2.size(); i++) {
-                var segment = snake2.get(i);
-                double x = segment.getX() * cellSize;
-                double y = segment.getY() * cellSize;
-
-                if (i == 0) {
-                    Image headImg = null;
-                    switch (gameBoard.getDirection2()) {
-                        case UP: headImg = images.get("head_up.png"); break;
-                        case DOWN: headImg = images.get("head_down.png"); break;
-                        case LEFT: headImg = images.get("head_left.png"); break;
-                        case RIGHT: headImg = images.get("head_right.png"); break;
-                    }
-                    if (headImg != null) gc.drawImage(headImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                    else {
-                        gc.setFill(Color.web("#1E90FF"));
-                        gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                    }
-                } else if (i == snake2.size() - 1) {
-                    var prev = snake2.get(i - 1);
-                    Image tailImg = chooseTailImage(prev, segment);
-                    if (tailImg != null) gc.drawImage(tailImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                    else {
-                        gc.setFill(Color.web("#4169E1"));
-                        gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                    }
-                } else {
-                    var prev = snake2.get(i - 1);
-                    var next = snake2.get(i + 1);
-                    Image bodyImg = chooseBodyImage(prev, segment, next);
-                    if (bodyImg != null) gc.drawImage(bodyImg, x + 1, y + 1, cellSize - 2, cellSize - 2);
-                    else {
-                        gc.setFill(Color.web("#4169E1"));
-                        gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
-                    }
-                }
-            }
-        }
-
-        // Draw wall (for 2-player mode)
-        var wall = gameBoard.getWall();
-        if (wall != null) {
-            gc.setFill(Color.web("#444444"));
-            gc.setStroke(Color.web("#666666"));
-            gc.setLineWidth(1);
-            for (var block : wall) {
-                gc.fillRect(block.getX() * cellSize, block.getY() * cellSize, cellSize, cellSize);
-                gc.strokeRect(block.getX() * cellSize, block.getY() * cellSize, cellSize, cellSize);
+    private void drawCheckerboard(double cs) {
+        Color c1 = Color.web("#1e2a31");
+        Color c2 = Color.web("#25333b");
+        for (int y = 0; y < gameBoard.getBoardHeight(); y++) {
+            for (int x = 0; x < gameBoard.getBoardWidth(); x++) {
+                gc.setFill(((x + y) % 2 == 0) ? c1 : c2);
+                gc.fillRect(x * cs, y * cs, cs, cs);
             }
         }
     }
 
-    // Draw a more contrasted checkerboard background using two distinct colors
-    private void drawCheckerboard(double cellSize) {
-        if (gc == null) return;
-        int cols = (gameBoard != null) ? gameBoard.getBoardWidth() : BOARD_WIDTH;
-        int rows = (gameBoard != null) ? gameBoard.getBoardHeight() : BOARD_HEIGHT;
+    private void drawFood() {
+        var food = gameBoard.getFood();
+        Image apple = images.get("apple.png");
+        double fx = food.getX() * cellSize;
+        double fy = food.getY() * cellSize;
+        if (apple != null) gc.drawImage(apple, fx + 1, fy + 1, cellSize - 2, cellSize - 2);
+        else {
+            gc.setFill(Color.RED);
+            gc.fillOval(fx + 2, fy + 2, cellSize - 4, cellSize - 4);
+        }
+    }
 
-        Color color1 = Color.web("#1e2a31"); // darker
-        Color color2 = Color.web("#25333b"); // lighter
+    private void drawSnake(java.util.List<GameBoard.Point> snake, GameBoard.Direction dir, Color fallback) {
+        for (int i = 0; i < snake.size(); i++) {
+            var seg = snake.get(i);
+            double x = seg.getX() * cellSize;
+            double y = seg.getY() * cellSize;
+            Image img = null;
 
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
-                gc.setFill(((x + y) % 2 == 0) ? color1 : color2);
-                gc.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            if (i == 0) {
+                switch (dir) {
+                    case UP -> img = images.get("head_up.png");
+                    case DOWN -> img = images.get("head_down.png");
+                    case LEFT -> img = images.get("head_left.png");
+                    case RIGHT -> img = images.get("head_right.png");
+                }
+            } else if (i == snake.size() - 1) {
+                var prev = snake.get(i - 1);
+                img = chooseTailImage(prev, seg);
+            } else {
+                var prev = snake.get(i - 1);
+                var next = snake.get(i + 1);
+                img = chooseBodyImage(prev, seg, next);
+            }
+
+            if (img != null)
+                gc.drawImage(img, x + 1, y + 1, cellSize - 2, cellSize - 2);
+            else {
+                gc.setFill(fallback);
+                gc.fillRoundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 5, 5);
             }
         }
+    }
+
+    private void drawWall() {
+        var wall = gameBoard.getWall();
+        if (wall == null) return;
+        gc.setFill(Color.web("#444"));
+        for (var b : wall)
+            gc.fillRect(b.getX() * cellSize, b.getY() * cellSize, cellSize, cellSize);
     }
 
     private Image chooseTailImage(GameBoard.Point prev, GameBoard.Point tail) {
         int dx = tail.getX() - prev.getX();
         int dy = tail.getY() - prev.getY();
-
-        // wrap-around
-        if (dx > 1) dx -= gameBoard.getBoardWidth();
-        if (dx < -1) dx += gameBoard.getBoardWidth();
-        if (dy > 1) dy -= gameBoard.getBoardHeight();
-        if (dy < -1) dy += gameBoard.getBoardHeight();
-
-        if (dx == 1 && dy == 0) return images.get("tail_right.png");
-        if (dx == -1 && dy == 0) return images.get("tail_left.png");
-        if (dx == 0 && dy == 1) return images.get("tail_down.png");
-        if (dx == 0 && dy == -1) return images.get("tail_up.png");
-
-        return images.get("tail_right.png");
+        if (dx == 1) return images.get("tail_right.png");
+        if (dx == -1) return images.get("tail_left.png");
+        if (dy == 1) return images.get("tail_down.png");
+        return images.get("tail_up.png");
     }
 
     private Image chooseBodyImage(GameBoard.Point prev, GameBoard.Point curr, GameBoard.Point next) {
-        int dxPrev = prev.getX() - curr.getX();
-        int dyPrev = prev.getY() - curr.getY();
-        int dxNext = next.getX() - curr.getX();
-        int dyNext = next.getY() - curr.getY();
+        int dx1 = prev.getX() - curr.getX();
+        int dy1 = prev.getY() - curr.getY();
+        int dx2 = next.getX() - curr.getX();
+        int dy2 = next.getY() - curr.getY();
 
-        // wrap-around fix
-        if (dxPrev > 1) dxPrev -= gameBoard.getBoardWidth();
-        if (dxPrev < -1) dxPrev += gameBoard.getBoardWidth();
-        if (dyPrev > 1) dyPrev -= gameBoard.getBoardHeight();
-        if (dyPrev < -1) dyPrev += gameBoard.getBoardHeight();
-        if (dxNext > 1) dxNext -= gameBoard.getBoardWidth();
-        if (dxNext < -1) dxNext += gameBoard.getBoardWidth();
-        if (dyNext > 1) dyNext -= gameBoard.getBoardHeight();
-        if (dyNext < -1) dyNext += gameBoard.getBoardHeight();
-
-        // Straight lines
-        if (dxPrev == 0 && dxNext == 0) return images.get("body_vertical.png");
-        if (dyPrev == 0 && dyNext == 0) return images.get("body_horizontal.png");
-
-        // Corners (adjusted for correct sprite orientation)
-        if ((dxPrev == -1 && dyNext == -1) || (dyPrev == -1 && dxNext == -1)) return images.get("body_topleft.png");
-        if ((dxPrev == 1 && dyNext == -1) || (dyPrev == -1 && dxNext == 1)) return images.get("body_topright.png");
-        if ((dxPrev == -1 && dyNext == 1) || (dyPrev == 1 && dxNext == -1)) return images.get("body_bottomleft.png");
-        if ((dxPrev == 1 && dyNext == 1) || (dyPrev == 1 && dxNext == 1)) return images.get("body_bottomright.png");
-
+        if (dx1 == 0 && dx2 == 0) return images.get("body_vertical.png");
+        if (dy1 == 0 && dy2 == 0) return images.get("body_horizontal.png");
+        if ((dx1 == -1 && dy2 == -1) || (dy1 == -1 && dx2 == -1)) return images.get("body_topleft.png");
+        if ((dx1 == 1 && dy2 == -1) || (dy1 == -1 && dx2 == 1)) return images.get("body_topright.png");
+        if ((dx1 == -1 && dy2 == 1) || (dy1 == 1 && dx2 == -1)) return images.get("body_bottomleft.png");
+        if ((dx1 == 1 && dy2 == 1) || (dy1 == 1 && dx2 == 1)) return images.get("body_bottomright.png");
         return images.get("body_horizontal.png");
     }
 
-
-
+    // ========== UI ==========
     private void updateUI() {
         scoreLabel.setText("P1: " + gameBoard.getScore());
-        if (scoreLabel2 != null && gameBoard.isTwoPlayer()) {
+        if (scoreLabel2 != null && gameBoard.isTwoPlayer())
             scoreLabel2.setText("P2: " + gameBoard.getScore2());
-        }
-        difficultyLabel.setText("Độ khó: " + getDifficultyText(gameBoard.getDifficulty()));
-    }
-
-    private String getDifficultyText(GameBoard.Difficulty difficulty) {
-        switch (difficulty) {
-            case EASY: return "DỄ";
-            case MEDIUM: return "TRUNG BÌNH";
-            case HARD: return "KHÓ";
-            default: return "DỄ";
-        }
+        difficultyLabel.setText("Độ khó: " + switch (gameBoard.getDifficulty()) {
+            case EASY -> "DỄ";
+            case MEDIUM -> "TRUNG BÌNH";
+            case HARD -> "KHÓ";
+        });
     }
 
     @FXML
@@ -494,8 +321,7 @@ public class GameController {
             gameLoop.play();
             pauseButton.setText("TẠM DỪNG");
         }
-        // Re-focus canvas so arrow keys work after clicking buttons
-        gameCanvas.requestFocus();
+        Platform.runLater(() -> gameCanvas.requestFocus());
     }
 
     @FXML
@@ -504,9 +330,7 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Menu.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-
-            Stage stage = (Stage) menuButton.getScene().getWindow();
-            stage.setScene(scene);
+            ((Stage) menuButton.getScene().getWindow()).setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -517,71 +341,11 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameOver.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-
-            GameOverController gameOverController = loader.getController();
-            gameOverController.setGameData(gameBoard.getScore(), gameBoard.getDifficulty());
-
-            // Lấy stage từ gameCanvas (luôn tồn tại)
-            Stage stage = (Stage) gameCanvas.getScene().getWindow();
-            stage.setScene(scene);
+            GameOverController ctrl = loader.getController();
+            ctrl.setGameData(gameBoard.getScore(), gameBoard.getDifficulty());
+            ((Stage) gameCanvas.getScene().getWindow()).setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    private void drawGameScaled(double cellSize) {
-        // Draw checkerboard background scaled to the computed cell size
-        drawCheckerboard(cellSize);
-
-        var snake = gameBoard.getSnake();
-        for (int i = 0; i < snake.size(); i++) {
-            var segment = snake.get(i);
-            int x = segment.getX();
-            int y = segment.getY();
-
-            if (i == 0) {
-                gc.setFill(Color.web("#228B22"));
-                gc.setStroke(Color.web("#32CD32"));
-                gc.setLineWidth(2);
-            } else {
-                gc.setFill(Color.web("#2E8B57"));
-                gc.setStroke(Color.web("#3CB371"));
-                gc.setLineWidth(1);
-            }
-            gc.fillRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
-            gc.strokeRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
-        }
-
-        // Rắn 2 nếu có
-        var snake2 = gameBoard.getSnake2();
-        if (snake2 != null) {
-            for (int i = 0; i < snake2.size(); i++) {
-                var segment = snake2.get(i);
-                int x = segment.getX();
-                int y = segment.getY();
-
-                if (i == 0) {
-                    gc.setFill(Color.web("#1E90FF"));
-                    gc.setStroke(Color.web("#87CEFA"));
-                    gc.setLineWidth(2);
-
-                    gc.setLineWidth(2);
-                } else {
-                    gc.setFill(Color.web("#4169E1"));
-                    gc.setStroke(Color.web("#87CEFA"));
-                    gc.setLineWidth(1);
-                }
-                gc.fillRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
-                gc.strokeRoundRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2, 5, 5);
-            }
-        }
-
-        var food = gameBoard.getFood();
-        gc.setFill(Color.web("#DC143C"));
-        gc.setStroke(Color.web("#FF6347"));
-        gc.setLineWidth(1);
-        gc.fillOval(food.getX() * cellSize + 2, food.getY() * cellSize + 2, cellSize - 4, cellSize - 4);
-        gc.strokeOval(food.getX() * cellSize + 2, food.getY() * cellSize + 2, cellSize - 4, cellSize - 4);
-    }
-
-
 }

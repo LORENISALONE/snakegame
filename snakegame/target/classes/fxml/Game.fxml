@@ -36,6 +36,9 @@
                 <Region HBox.hgrow="ALWAYS" />
                 <Button fx:id="pauseButton" mnemonicParsing="false" onAction="#togglePause"
                         styleClass="control-button" text="TẠM DỪNG" />
+                <Button fx:id="skinButton" mnemonicParsing="false" onAction="#changeSkin"
+                        styleClass="control-button" text="SKIN" />
+                <!-- color picker removed: skin folder will provide colors/skins -->
                 <Button fx:id="menuButton" mnemonicParsing="false" onAction="#backToMenu"
                         styleClass="control-button" text="MENU" />
             </children>
