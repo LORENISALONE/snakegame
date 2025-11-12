@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane fx:id="rootPane"
+            maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="720.0" prefWidth="900.0"
+            xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.snakegame.controller.GameController">
+
+    <!-- ======= Header ======= -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="game-header">
+            <children>
+                <Label fx:id="scoreLabel" text="P1: 0" textFill="#2E8B57">
+                    <font>
+                        <Font name="Arial Bold" size="18.0" />
+                    </font>
+                </Label>
+                <Label fx:id="scoreLabel2" text="P2: 0" textFill="#1E90FF">
+                    <font>
+                        <Font name="Arial Bold" size="18.0" />
+                    </font>
+                </Label>
+                <Label fx:id="difficultyLabel" text="Độ khó: DỄ" textFill="#2E8B57">
+                    <font>
+                        <Font name="Arial Bold" size="18.0" />
+                    </font>
+                </Label>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="pauseButton" mnemonicParsing="false" onAction="#togglePause"
+                        styleClass="control-button" text="TẠM DỪNG" />
+                <Button fx:id="skinButton" mnemonicParsing="false" onAction="#changeSkin"
+                        styleClass="control-button" text="SKIN" />
+                <!-- color picker removed: skin folder will provide colors/skins -->
+                <Button fx:id="menuButton" mnemonicParsing="false" onAction="#backToMenu"
+                        styleClass="control-button" text="MENU" />
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+        </HBox>
+    </top>
+
+    <!-- ======= Game Canvas ======= -->
+    <center>
+        <StackPane fx:id="gamePane" alignment="CENTER" prefHeight="520.0" prefWidth="820.0" styleClass="game-board">
+            <children>
+                <!-- Thêm Canvas để vẽ game -->
+                <Canvas fx:id="gameCanvas" width="500.0" height="500.0" />
+            </children>
+        </StackPane>
+    </center>
+
+    <!-- ======= Footer ======= -->
+    <bottom>
+        <VBox alignment="CENTER" spacing="10.0" styleClass="game-footer">
+            <children>
+                <Label text="Sử dụng phím mũi tên để điều khiển" textFill="#666666">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Label>
+                <Label text="Nhấn SPACE để tạm dừng" textFill="#666666">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Label>
+            </children>
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </VBox>
+    </bottom>
+</BorderPane>

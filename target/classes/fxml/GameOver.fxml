@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.snakegame.controller.GameOverController">
+   <children>
+      <VBox alignment="CENTER" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label fx:id="gameOverLabel" text="GAME OVER" textFill="#DC143C">
+               <font>
+                  <Font name="Arial Black" size="36.0" />
+               </font>
+            </Label>
+            
+            <VBox alignment="CENTER" spacing="10.0">
+               <Label fx:id="finalScoreLabel" text="Điểm cuối: 0" textFill="#2E8B57">
+                  <font>
+                     <Font name="Arial Bold" size="20.0" />
+                  </font>
+               </Label>
+                <Label fx:id="finalScoreLabel2" text="P2: 0" textFill="#1E90FF" visible="false">
+                    <font>
+                        <Font name="Arial Bold" size="20.0" />
+                    </font>
+                </Label>
+               <Label fx:id="difficultyLabel" text="Độ khó: DỄ" textFill="#666666">
+                  <font>
+                     <Font name="Arial" size="16.0" />
+                  </font>
+               </Label>
+            </VBox>
+            
+            <VBox alignment="CENTER" spacing="15.0">
+               <TextField fx:id="playerNameField" promptText="Nhập tên của bạn" styleClass="name-input" />
+               <HBox alignment="CENTER" spacing="20.0">
+                  <children>
+                     <Button fx:id="saveScoreButton" mnemonicParsing="false" onAction="#saveScore" styleClass="menu-button" text="LƯU ĐIỂM" />
+                     <Button fx:id="playAgainButton" mnemonicParsing="false" onAction="#playAgain" styleClass="menu-button" text="CHƠI LẠI" />
+                     <Button fx:id="menuButton" mnemonicParsing="false" onAction="#backToMenu" styleClass="menu-button" text="MENU" />
+                  </children>
+               </HBox>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
+      </VBox>
+   </children>
+</AnchorPane>

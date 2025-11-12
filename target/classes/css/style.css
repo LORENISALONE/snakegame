@@ -1,0 +1,203 @@
+/* Root styles */
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #667eea 0%, #764ba2 100%);
+    -fx-font-family: "Arial", sans-serif;
+}
+
+/* Menu styles */
+.menu-button {
+    -fx-background-color: linear-gradient(to bottom right, #2E8B57, #3CB371);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);
+    -fx-padding: 15 30 15 30;
+}
+
+.menu-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #3CB371, #2E8B57);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 15, 0, 0, 3);
+}
+
+.menu-button:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+.exit-button {
+    -fx-background-color: linear-gradient(to bottom right, #DC143C, #FF6347);
+}
+
+.exit-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #FF6347, #DC143C);
+}
+
+/* Game header styles */
+.game-header {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 1);
+}
+
+.control-button {
+    -fx-background-color: linear-gradient(to bottom right, #4CAF50, #45a049);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16 8 16;
+}
+
+.control-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #45a049, #4CAF50);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+/* Game board styles */
+.game-board {
+    -fx-background-color: #2C3E50;
+    -fx-background-radius: 0;
+    -fx-border-color: #34495E;
+    -fx-border-width: 3;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);
+}
+
+/* Game footer styles */
+.game-footer {
+    -fx-background-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
+}
+
+/* High score styles */
+.header {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 1);
+}
+
+.filter-button {
+    -fx-background-color: linear-gradient(to bottom right, #3498DB, #2980B9);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 10 20 10 20;
+}
+
+.filter-button:hover {
+    -fx-background-color: linear-gradient(to bottom right, #2980B9, #3498DB);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.filter-button:selected {
+    -fx-background-color: linear-gradient(to bottom right, #E74C3C, #C0392B);
+}
+
+/* Score item styles */
+.score-item {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
+    -fx-spacing: 10;
+}
+
+.score-item:hover {
+    -fx-background-color: rgba(255, 255, 255, 1.0);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* Footer styles */
+.footer {
+    -fx-background-color: rgba(255, 255, 255, 0.8);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 3, 0, 0, 1);
+}
+
+/* Name input styles */
+.name-input {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-color: #2E8B57;
+    -fx-border-width: 2;
+    -fx-padding: 10 15 10 15;
+    -fx-font-size: 16;
+    -fx-prompt-text-fill: #999999;
+}
+
+.name-input:focused {
+    -fx-border-color: #3CB371;
+    -fx-effect: dropshadow(gaussian, rgba(46,139,87,0.3), 5, 0, 0, 1);
+}
+
+/* Snake and food styles */
+.snake-segment {
+    -fx-fill: #2E8B57;
+    -fx-stroke: #3CB371;
+    -fx-stroke-width: 1;
+}
+
+.snake-head {
+    -fx-fill: #228B22;
+    -fx-stroke: #32CD32;
+    -fx-stroke-width: 2;
+}
+
+.food {
+    -fx-fill: #DC143C;
+    -fx-stroke: #FF6347;
+    -fx-stroke-width: 1;
+}
+
+/* Game over overlay */
+.game-over-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+
+/* Scroll pane styles */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: rgba(255,255,255,0.3);
+    -fx-background-radius: 10;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #2E8B57;
+    -fx-background-radius: 10;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #3CB371;
+}
+
+/* JavaFX doesn't support @keyframes. Use Timeline/Transitions in code instead */
