@@ -14,43 +14,61 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class GameOverController {
-    
+
     @FXML
     private Label gameOverLabel;
-    
+
     @FXML
     private Label finalScoreLabel;
-    
+
     @FXML
     private Label difficultyLabel;
-    
+
     @FXML
     private TextField playerNameField;
-    
+
     @FXML
     private Button saveScoreButton;
-    
+
     @FXML
     private Button playAgainButton;
-    
+
     @FXML
     private Button menuButton;
-    
+    @FXML
+    private Label finalScoreLabel2;
+
     private int finalScore;
     private GameBoard.Difficulty difficulty;
     private DatabaseManager dbManager;
+    private boolean wasTwoPlayer;  // trạng thái game trước khi kết thúc
+    private int finalScore2;
+
 
     public GameOverController() {
         this.dbManager = DatabaseManager.getInstance();
     }
 
-    public void setGameData(int score, GameBoard.Difficulty difficulty) {
-        this.finalScore = score;
+    public void setGameData(int score1,int score2, GameBoard.Difficulty difficulty, boolean twoPlayer) {
+        this.finalScore = score1;
+        this.finalScore2 = score2;
         this.difficulty = difficulty;
-        
-        finalScoreLabel.setText("Điểm cuối: " + score);
+        this.wasTwoPlayer = twoPlayer;
+
+        // Hiển thị điểm
+        finalScoreLabel.setText("P1: " + score1);
+
+        if (twoPlayer && finalScoreLabel2 != null) {
+            finalScoreLabel2.setText("P2: " + score2);
+            finalScoreLabel2.setVisible(true);
+        } else if (finalScoreLabel2 != null) {
+            finalScoreLabel2.setVisible(false);
+        }
+
         difficultyLabel.setText("Độ khó: " + getDifficultyText(difficulty));
     }
+
+
 
     private String getDifficultyText(GameBoard.Difficulty difficulty) {
         switch (difficulty) {
@@ -67,10 +85,10 @@ public class GameOverController {
         if (playerName.isEmpty()) {
             playerName = "Người chơi ẩn danh";
         }
-        
+
         Player player = new Player(playerName, finalScore, difficulty.name());
         boolean saved = dbManager.savePlayer(player);
-        
+
         if (saved) {
             saveScoreButton.setText("ĐÃ LƯU!");
             saveScoreButton.setDisable(true);
@@ -85,10 +103,10 @@ public class GameOverController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Game.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            
+
             GameController gameController = loader.getController();
-            gameController.initializeGame(difficulty);
-            
+            gameController.initializeGame(difficulty,wasTwoPlayer);
+
             Stage stage = (Stage) playAgainButton.getScene().getWindow();
             stage.setScene(scene);
         } catch (IOException e) {
@@ -102,7 +120,7 @@ public class GameOverController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Menu.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
-            
+
             Stage stage = (Stage) menuButton.getScene().getWindow();
             stage.setScene(scene);
         } catch (IOException e) {

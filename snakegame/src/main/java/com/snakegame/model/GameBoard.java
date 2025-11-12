@@ -1,4 +1,3 @@
-// java
 package com.snakegame.model;
 
 import javafx.scene.paint.Color;
@@ -25,13 +24,13 @@ public class GameBoard {
         }
     }
 
-
     private static final int BOARD_WIDTH = 20;
     private static final int BOARD_HEIGHT = 20;
 
     private List<Point> snake;
     private List<Point> snake2; // optional for 2P
     private Point food;
+    private Point food2; // thức ăn cho P2
     private Direction direction;
     private Direction nextDirection;
     private Direction direction2;
@@ -43,7 +42,6 @@ public class GameBoard {
     private Difficulty difficulty;
     private Random random;
     private List<Point> wall;
-
 
     public GameBoard(Difficulty difficulty) {
         this(difficulty, false);
@@ -57,27 +55,35 @@ public class GameBoard {
     }
 
     private void initializeGame() {
-        snake = new ArrayList<>();
-        snake.add(new Point(BOARD_WIDTH / 2, BOARD_HEIGHT / 2));
-        direction = Direction.RIGHT;
-        nextDirection = Direction.RIGHT;
-
-        if (twoPlayer) {
-            snake2 = new ArrayList<>();
-            snake2.add(new Point(BOARD_WIDTH / 2 - 3, BOARD_HEIGHT / 2));
-            direction2 = Direction.RIGHT;
-            nextDirection2 = Direction.RIGHT;
-        } else {
-            snake2 = null;
-        }
         gameOver = false;
         score = 0;
         score2 = 0;
-        generateFood();
+
         if (twoPlayer) {
+            // P1 bên trái
+            snake = new ArrayList<>();
+            snake.add(new Point(BOARD_WIDTH / 4, BOARD_HEIGHT / 2));
+            direction = Direction.RIGHT;
+            nextDirection = Direction.RIGHT;
+
+            // P2 bên phải
+            snake2 = new ArrayList<>();
+            snake2.add(new Point(3 * BOARD_WIDTH / 4, BOARD_HEIGHT / 2));
+            direction2 = Direction.LEFT;
+            nextDirection2 = Direction.LEFT;
+
             createWall();
+        } else {
+            // 1P → giữa màn hình, wrap-around
+            snake = new ArrayList<>();
+            snake.add(new Point(BOARD_WIDTH / 2, BOARD_HEIGHT / 2));
+            direction = Direction.RIGHT;
+            nextDirection = Direction.RIGHT;
+            snake2 = null;
         }
 
+        generateFood();
+        if (twoPlayer) generateFood2();
     }
 
     public void reset() {
@@ -85,7 +91,6 @@ public class GameBoard {
     }
 
     public void setDirection(Direction newDirection) {
-        // Prevent snake from going backwards
         if ((direction == Direction.UP && newDirection != Direction.DOWN) ||
                 (direction == Direction.DOWN && newDirection != Direction.UP) ||
                 (direction == Direction.LEFT && newDirection != Direction.RIGHT) ||
@@ -107,10 +112,25 @@ public class GameBoard {
     public void update() {
         if (gameOver) return;
 
+        // --- Update P1 ---
         direction = nextDirection;
         Point head = snake.get(0);
         Point newHead = new Point(head.getX(), head.getY());
 
+        switch (direction) {
+            case UP -> newHead.setY(newHead.getY() - 1);
+            case DOWN -> newHead.setY(newHead.getY() + 1);
+            case LEFT -> newHead.setX(newHead.getX() - 1);
+            case RIGHT -> newHead.setX(newHead.getX() + 1);
+        }
+
+        if (!twoPlayer) {
+            // 1P wrap-around
+            newHead.setX((newHead.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
+            newHead.setY((newHead.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
+        }
+
+        // --- Update P2 ---
         Point newHead2 = null;
         if (twoPlayer) {
             direction2 = nextDirection2;
@@ -118,197 +138,100 @@ public class GameBoard {
             newHead2 = new Point(head2.getX(), head2.getY());
 
             switch (direction2) {
-                case UP:
-                    newHead2.setY(newHead2.getY() - 1);
-                    break;
-                case DOWN:
-                    newHead2.setY(newHead2.getY() + 1);
-                    break;
-                case LEFT:
-                    newHead2.setX(newHead2.getX() - 1);
-                    break;
-                case RIGHT:
-                    newHead2.setX(newHead2.getX() + 1);
-                    break;
+                case UP -> newHead2.setY(newHead2.getY() - 1);
+                case DOWN -> newHead2.setY(newHead2.getY() + 1);
+                case LEFT -> newHead2.setX(newHead2.getX() - 1);
+                case RIGHT -> newHead2.setX(newHead2.getX() + 1);
             }
 
-            // Wrap P2 head around board edges (toroidal)
-            newHead2.setX((newHead2.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
-            newHead2.setY((newHead2.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
+            // Giới hạn bàn cho 2P: P1 [0, BOARD_WIDTH/2), P2 [BOARD_WIDTH/2, BOARD_WIDTH)
+            if (newHead.getX() < 0 || newHead.getX() >= BOARD_WIDTH / 2 ||
+                    newHead.getY() < 0 || newHead.getY() >= BOARD_HEIGHT ||
+                    newHead2.getX() < BOARD_WIDTH / 2 || newHead2.getX() >= BOARD_WIDTH ||
+                    newHead2.getY() < 0 || newHead2.getY() >= BOARD_HEIGHT) {
+                gameOver = true;
+                return;
+            }
         }
 
-
-        // Move head based on direction
-        switch (direction) {
-            case UP:
-                newHead.setY(newHead.getY() - 1);
-                break;
-            case DOWN:
-                newHead.setY(newHead.getY() + 1);
-                break;
-            case LEFT:
-                newHead.setX(newHead.getX() - 1);
-                break;
-            case RIGHT:
-                newHead.setX(newHead.getX() + 1);
-                break;
-        }
-
-        // Wrap main head around board edges (toroidal)
-        newHead.setX((newHead.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
-        newHead.setY((newHead.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
-
-        // Determine if we will eat food this move
+        // --- Determine eating ---
         boolean willEat = newHead.equals(food);
-        boolean willEat2 = twoPlayer && newHead2.equals(food);
+        boolean willEat2 = twoPlayer && newHead2.equals(food2);
 
-        // If not eating, remove tail first to avoid false self-collision when moving into previous tail cell
-        if (!willEat) {
-            if (!snake.isEmpty()) {
-                snake.remove(snake.size() - 1);
-            }
+        // --- Remove tail if not eating ---
+        if (!willEat && !snake.isEmpty()) snake.remove(snake.size() - 1);
+        if (twoPlayer && !willEat2 && !snake2.isEmpty()) snake2.remove(snake2.size() - 1);
+
+        // --- Self collision ---
+        if (snake.contains(newHead) || (twoPlayer && snake2.contains(newHead))) { gameOver = true; return; }
+        if (twoPlayer && snake2.contains(newHead2)) { gameOver = true; return; }
+
+        // --- Wall collision ---
+        if (twoPlayer && wall != null) {
+            if (wall.contains(newHead) || wall.contains(newHead2)) { gameOver = true; return; }
         }
 
-        if (twoPlayer && !willEat2) {
-            if (!snake2.isEmpty()) {
-                snake2.remove(snake2.size() - 1);
-            }
-        }
-
-        // Check self collision against current body (after potential tail removal)
-        if (snake.contains(newHead)) {
-            gameOver = true;
-            return;
-        }
-        // Collision with wall
-        if (twoPlayer && wall != null && wall.contains(newHead)) {
-            gameOver = true;
-            return;
-        }
-        if (twoPlayer && wall != null && wall.contains(newHead2)) {
-            gameOver = true;
-            return;
-        }
-
-
+        // --- Cross collision & head-to-head ---
         if (twoPlayer) {
-            // P2 self collision
-            if (snake2.contains(newHead2)) {
-                gameOver = true;
-                return;
-            }
-            // Cross collision: head into other body
-            if (snake.contains(newHead2) || snake2.contains(newHead)) {
-                gameOver = true;
-                return;
-            }
-            // Head-to-head collision
-            if (newHead.equals(newHead2)) {
-                gameOver = true;
-                return;
-            }
+            if (snake.contains(newHead2) || snake2.contains(newHead)) { gameOver = true; return; }
+            if (newHead.equals(newHead2)) { gameOver = true; return; }
         }
 
-        // Add new head
+        // --- Add new heads ---
         snake.add(0, newHead);
-        if (twoPlayer) {
-            snake2.add(0, newHead2);
-        }
+        if (twoPlayer) snake2.add(0, newHead2);
 
-        // If ate food, increase score and generate new food (no tail removal needed here)
+        // --- Eating food ---
         if (willEat) {
             score += 10;
             generateFood();
         }
         if (twoPlayer && willEat2) {
             score2 += 10;
-            generateFood();
+            generateFood2();
         }
     }
 
     private void generateFood() {
         do {
-            food = new Point(random.nextInt(BOARD_WIDTH), random.nextInt(BOARD_HEIGHT));
-        } while (
-                snake.contains(food) ||
-                        (twoPlayer && snake2 != null && snake2.contains(food)) ||
-                        (twoPlayer && wall != null && wall.contains(food))
-        );
-
+            food = new Point(random.nextInt(BOARD_WIDTH / 2), random.nextInt(BOARD_HEIGHT));
+        } while (snake.contains(food) ||
+                (twoPlayer && snake2 != null && snake2.contains(food)) ||
+                (twoPlayer && wall != null && wall.contains(food)) ||
+                food.equals(snake.get(0)));
     }
 
-    public List<Point> getSnake() {
-        return new ArrayList<>(snake);
+    private void generateFood2() {
+        do {
+            food2 = new Point(random.nextInt(BOARD_WIDTH / 2) + BOARD_WIDTH / 2, random.nextInt(BOARD_HEIGHT));
+        } while (snake.contains(food2) ||
+                (twoPlayer && snake2 != null && snake2.contains(food2)) ||
+                (twoPlayer && wall != null && wall.contains(food2)) ||
+                food2.equals(food) ||
+                food2.equals(snake2.get(0)));
     }
 
-    public List<Point> getSnake2() {
-        return twoPlayer ? new ArrayList<>(snake2) : null;
-    }
-
-    public Point getFood() {
-        return food;
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public int getScore2() {
-        return score2;
-    }
-
-    public boolean isTwoPlayer() {
-        return twoPlayer;
-    }
-
-    public Difficulty getDifficulty() {
-        return difficulty;
-    }
-
-    public int getBoardWidth() {
-        return BOARD_WIDTH;
-    }
-
-    public int getBoardHeight() {
-        return BOARD_HEIGHT;
-    }
-
-    // Expose current directions so controller can pick the right head image
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public Direction getDirection2() {
-        return direction2;
-    }
+    public List<Point> getSnake() { return new ArrayList<>(snake); }
+    public List<Point> getSnake2() { return twoPlayer ? new ArrayList<>(snake2) : null; }
+    public Point getFood() { return food; }
+    public Point getFood2() { return food2; }
+    public boolean isGameOver() { return gameOver; }
+    public int getScore() { return score; }
+    public int getScore2() { return score2; }
+    public boolean isTwoPlayer() { return twoPlayer; }
+    public Difficulty getDifficulty() { return difficulty; }
+    public int getBoardWidth() { return BOARD_WIDTH; }
+    public int getBoardHeight() { return BOARD_HEIGHT; }
+    public Direction getDirection() { return direction; }
+    public Direction getDirection2() { return direction2; }
 
     public static class Point {
         private int x, y;
-
-        public Point(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public void setX(int x) {
-            this.x = x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public void setY(int y) {
-            this.y = y;
-        }
+        public Point(int x, int y) { this.x = x; this.y = y; }
+        public int getX() { return x; }
+        public void setX(int x) { this.x = x; }
+        public int getY() { return y; }
+        public void setY(int y) { this.y = y; }
 
         @Override
         public boolean equals(Object obj) {
@@ -323,6 +246,7 @@ public class GameBoard {
             return x * 31 + y;
         }
     }
+
     private void createWall() {
         wall = new ArrayList<>();
         int midX = BOARD_WIDTH / 2;
@@ -330,9 +254,6 @@ public class GameBoard {
             wall.add(new Point(midX, y));
         }
     }
-    public List<Point> getWall() {
-        return wall;
-    }
 
-
+    public List<Point> getWall() { return wall; }
 }

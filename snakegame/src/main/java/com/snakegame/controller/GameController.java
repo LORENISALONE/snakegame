@@ -36,6 +36,8 @@ public class GameController {
     private Timeline gameLoop;
     private boolean isPaused = false;
     private GraphicsContext gc;
+    private boolean twoPlayer;
+
 
     private double cellSize = 25;
     private static final int BOARD_WIDTH = 20;
@@ -47,6 +49,7 @@ public class GameController {
 
     // ========== INIT ==========
     public void initializeGame(GameBoard.Difficulty difficulty) {
+
         detectAvailableSkins();
         this.gameBoard = new GameBoard(difficulty);
         this.gc = gameCanvas.getGraphicsContext2D();
@@ -55,6 +58,7 @@ public class GameController {
 
     public void initializeGame(GameBoard.Difficulty difficulty, boolean twoPlayer) {
         detectAvailableSkins();
+        this.twoPlayer = twoPlayer;
         this.gameBoard = new GameBoard(difficulty, twoPlayer);
         this.gc = gameCanvas.getGraphicsContext2D();
         setupGame(difficulty);
@@ -185,17 +189,34 @@ public class GameController {
     private void handleKeyPress(KeyEvent e) {
         if (gameBoard.isGameOver()) return;
 
-        switch (e.getCode()) {
-            case W -> gameBoard.setDirection(GameBoard.Direction.UP);
-            case S -> gameBoard.setDirection(GameBoard.Direction.DOWN);
-            case A -> gameBoard.setDirection(GameBoard.Direction.LEFT);
-            case D -> gameBoard.setDirection(GameBoard.Direction.RIGHT);
-            case UP -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.UP); }
-            case DOWN -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.DOWN); }
-            case LEFT -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.LEFT); }
-            case RIGHT -> { if (gameBoard.isTwoPlayer()) gameBoard.setDirectionP2(GameBoard.Direction.RIGHT); }
+        if (gameBoard.isTwoPlayer()) {
+            // P1 (bên trái) → WASD
+            switch (e.getCode()) {
+                case W -> gameBoard.setDirection(GameBoard.Direction.UP);
+                case S -> gameBoard.setDirection(GameBoard.Direction.DOWN);
+                case A -> gameBoard.setDirection(GameBoard.Direction.LEFT);
+                case D -> gameBoard.setDirection(GameBoard.Direction.RIGHT);
+            }
+
+            // P2 (bên phải) → phím mũi tên
+            switch (e.getCode()) {
+                case UP -> gameBoard.setDirectionP2(GameBoard.Direction.UP);
+                case DOWN -> gameBoard.setDirectionP2(GameBoard.Direction.DOWN);
+                case LEFT -> gameBoard.setDirectionP2(GameBoard.Direction.LEFT);
+                case RIGHT -> gameBoard.setDirectionP2(GameBoard.Direction.RIGHT);
+            }
+        } else {
+            // 1P → P1 (bên phải) dùng mũi tên
+            switch (e.getCode()) {
+                case UP -> gameBoard.setDirection(GameBoard.Direction.UP);
+                case DOWN -> gameBoard.setDirection(GameBoard.Direction.DOWN);
+                case LEFT -> gameBoard.setDirection(GameBoard.Direction.LEFT);
+                case RIGHT -> gameBoard.setDirection(GameBoard.Direction.RIGHT);
+            }
         }
     }
+
+
 
     // ========== DRAW ==========
     private void drawGame() {
@@ -224,16 +245,31 @@ public class GameController {
     }
 
     private void drawFood() {
-        var food = gameBoard.getFood();
         Image apple = images.get("apple.png");
-        double fx = food.getX() * cellSize;
-        double fy = food.getY() * cellSize;
-        if (apple != null) gc.drawImage(apple, fx + 1, fy + 1, cellSize - 2, cellSize - 2);
+
+        // Vẽ food của P1
+        var food1 = gameBoard.getFood();
+        double fx1 = food1.getX() * cellSize;
+        double fy1 = food1.getY() * cellSize;
+        if (apple != null) gc.drawImage(apple, fx1 + 1, fy1 + 1, cellSize - 2, cellSize - 2);
         else {
             gc.setFill(Color.RED);
-            gc.fillOval(fx + 2, fy + 2, cellSize - 4, cellSize - 4);
+            gc.fillOval(fx1 + 2, fy1 + 2, cellSize - 4, cellSize - 4);
+        }
+
+        // Vẽ food của P2 (nếu 2 người chơi)
+        if (gameBoard.isTwoPlayer()) {
+            var food2 = gameBoard.getFood2();
+            double fx2 = food2.getX() * cellSize;
+            double fy2 = food2.getY() * cellSize;
+            if (apple != null) gc.drawImage(apple, fx2 + 1, fy2 + 1, cellSize - 2, cellSize - 2);
+            else {
+                gc.setFill(Color.RED);
+                gc.fillOval(fx2 + 2, fy2 + 2, cellSize - 4, cellSize - 4);
+            }
         }
     }
+
 
     private void drawSnake(java.util.List<GameBoard.Point> snake, GameBoard.Direction dir, Color fallback) {
         for (int i = 0; i < snake.size(); i++) {
@@ -341,11 +377,20 @@ public class GameController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GameOver.fxml"));
             Scene scene = new Scene(loader.load());
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
             GameOverController ctrl = loader.getController();
-            ctrl.setGameData(gameBoard.getScore(), gameBoard.getDifficulty());
-            ((Stage) gameCanvas.getScene().getWindow()).setScene(scene);
+
+            // Nếu là 2 người chơi, lấy điểm của P2, nếu 1 người chơi thì score2 = 0
+            int score2 = gameBoard.isTwoPlayer() ? gameBoard.getScore2() : 0;
+
+            // Truyền đủ 4 tham số
+            ctrl.setGameData(gameBoard.getScore(), score2, gameBoard.getDifficulty(), twoPlayer);
+
+            Stage stage = (Stage) gameCanvas.getScene().getWindow();
+            stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

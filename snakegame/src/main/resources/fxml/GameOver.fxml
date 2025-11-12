@@ -21,6 +21,11 @@
                      <Font name="Arial Bold" size="20.0" />
                   </font>
                </Label>
+                <Label fx:id="finalScoreLabel2" text="P2: 0" textFill="#1E90FF" visible="false">
+                    <font>
+                        <Font name="Arial Bold" size="20.0" />
+                    </font>
+                </Label>
                <Label fx:id="difficultyLabel" text="Độ khó: DỄ" textFill="#666666">
                   <font>
                      <Font name="Arial" size="16.0" />
