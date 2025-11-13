@@ -17,7 +17,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.AudioClip;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,7 +39,11 @@ public class GameController {
     private boolean isPaused = false;
     private GraphicsContext gc;
     private boolean twoPlayer;
+    private int previousScore = 0; // để kiểm tra ăn mồi
 
+    private AudioClip eatSound;
+    private MediaPlayer diePlayer;
+    private boolean deathSoundPlayed = false; // đảm bảo âm thanh chết chỉ phát 1 lần
 
     private double cellSize = 25;
     private static final int BOARD_WIDTH = 20;
@@ -49,7 +55,6 @@ public class GameController {
 
     // ========== INIT ==========
     public void initializeGame(GameBoard.Difficulty difficulty) {
-
         detectAvailableSkins();
         this.gameBoard = new GameBoard(difficulty);
         this.gc = gameCanvas.getGraphicsContext2D();
@@ -66,12 +71,12 @@ public class GameController {
 
     private void setupGame(GameBoard.Difficulty difficulty) {
         loadAssets();
+        loadSounds();
         updateUI();
         setupKeyboardControls();
         setupGameLoop();
         drawGame();
 
-        // ✅ focus đảm bảo hoạt động cả khi Stage vừa hiển thị
         Platform.runLater(() -> {
             Scene scene = gameCanvas.getScene();
             if (scene != null) {
@@ -85,12 +90,10 @@ public class GameController {
                 });
             }
 
-            // Ngăn button chiếm focus
             for (Button b : new Button[]{pauseButton, menuButton, skinButton}) {
                 if (b != null) b.setFocusTraversable(false);
             }
 
-            // Focus vào Canvas sau khi Stage load
             gameCanvas.setFocusTraversable(true);
             gameCanvas.requestFocus();
         });
@@ -157,28 +160,61 @@ public class GameController {
         loadAssets();
         drawGame();
         skinButton.setText("SKIN: " + availableSkins[currentSkinIndex]);
-
-        // ✅ đảm bảo sau khi đổi skin vẫn điều khiển được
         Platform.runLater(() -> gameCanvas.requestFocus());
     }
 
     // ========== LOOP ==========
     private void setupGameLoop() {
+        previousScore = gameBoard.getScore();
+
         gameLoop = new Timeline(new KeyFrame(Duration.millis(gameBoard.getDifficulty().getSpeed()), e -> {
             if (!isPaused && !gameBoard.isGameOver()) {
                 gameBoard.update();
+
+                int currentScore = gameBoard.getScore();
+                if (currentScore > previousScore) {
+                    if (eatSound != null) {
+                        eatSound.play();
+                    }
+                }
+
                 Platform.runLater(() -> {
                     drawGame();
                     updateUI();
                 });
+
                 if (gameBoard.isGameOver()) {
+                    if (!deathSoundPlayed && diePlayer != null) {
+                        diePlayer.stop();
+                        diePlayer.play();
+                        deathSoundPlayed = true;
+                    }
                     gameLoop.stop();
                     Platform.runLater(this::showGameOver);
                 }
+
+                previousScore = currentScore;
             }
         }));
         gameLoop.setCycleCount(Timeline.INDEFINITE);
     }
+
+    // ========== SOUND ==========
+    private void loadSounds() {
+        try {
+            // Sử dụng AudioClip cho âm thanh ngắn (eat)
+            var eatUrl = getClass().getResource("/sound/eat.wav");
+            if (eatUrl != null) eatSound = new AudioClip(eatUrl.toExternalForm());
+
+            // Sử dụng MediaPlayer cho âm thanh dài hoặc nhạc nền (die)
+            var dieUrl = getClass().getResource("/sound/die.wav");
+            if (dieUrl != null) diePlayer = new MediaPlayer(new Media(dieUrl.toExternalForm()));
+
+        } catch (Exception e) {
+            System.out.println("⚠️ Không thể tải âm thanh: " + e.getMessage());
+        }
+    }
+
 
     // ========== CONTROLS ==========
     private void setupKeyboardControls() {
@@ -190,23 +226,17 @@ public class GameController {
         if (gameBoard.isGameOver()) return;
 
         if (gameBoard.isTwoPlayer()) {
-            // P1 (bên trái) → WASD
             switch (e.getCode()) {
                 case W -> gameBoard.setDirection(GameBoard.Direction.UP);
                 case S -> gameBoard.setDirection(GameBoard.Direction.DOWN);
                 case A -> gameBoard.setDirection(GameBoard.Direction.LEFT);
                 case D -> gameBoard.setDirection(GameBoard.Direction.RIGHT);
-            }
-
-            // P2 (bên phải) → phím mũi tên
-            switch (e.getCode()) {
                 case UP -> gameBoard.setDirectionP2(GameBoard.Direction.UP);
                 case DOWN -> gameBoard.setDirectionP2(GameBoard.Direction.DOWN);
                 case LEFT -> gameBoard.setDirectionP2(GameBoard.Direction.LEFT);
                 case RIGHT -> gameBoard.setDirectionP2(GameBoard.Direction.RIGHT);
             }
         } else {
-            // 1P → P1 (bên phải) dùng mũi tên
             switch (e.getCode()) {
                 case UP -> gameBoard.setDirection(GameBoard.Direction.UP);
                 case DOWN -> gameBoard.setDirection(GameBoard.Direction.DOWN);
@@ -215,8 +245,6 @@ public class GameController {
             }
         }
     }
-
-
 
     // ========== DRAW ==========
     private void drawGame() {
@@ -231,23 +259,32 @@ public class GameController {
         if (gameBoard.getSnake2() != null)
             drawSnake(gameBoard.getSnake2(), gameBoard.getDirection2(), Color.web("#4169E1"));
         drawWall();
+        drawObstacles();
+    }
+
+    private void drawObstacles() {
+        var obs = gameBoard.getObstacles();
+        if (obs == null) return;
+
+        gc.setFill(Color.web("#555"));
+        for (var o : obs) {
+            gc.fillRect(o.getX() * cellSize, o.getY() * cellSize, cellSize, cellSize);
+        }
     }
 
     private void drawCheckerboard(double cs) {
         Color c1 = Color.web("#1e2a31");
         Color c2 = Color.web("#25333b");
-        for (int y = 0; y < gameBoard.getBoardHeight(); y++) {
+        for (int y = 0; y < gameBoard.getBoardHeight(); y++)
             for (int x = 0; x < gameBoard.getBoardWidth(); x++) {
                 gc.setFill(((x + y) % 2 == 0) ? c1 : c2);
                 gc.fillRect(x * cs, y * cs, cs, cs);
             }
-        }
     }
 
     private void drawFood() {
         Image apple = images.get("apple.png");
 
-        // Vẽ food của P1
         var food1 = gameBoard.getFood();
         double fx1 = food1.getX() * cellSize;
         double fy1 = food1.getY() * cellSize;
@@ -257,7 +294,6 @@ public class GameController {
             gc.fillOval(fx1 + 2, fy1 + 2, cellSize - 4, cellSize - 4);
         }
 
-        // Vẽ food của P2 (nếu 2 người chơi)
         if (gameBoard.isTwoPlayer()) {
             var food2 = gameBoard.getFood2();
             double fx2 = food2.getX() * cellSize;
@@ -269,7 +305,6 @@ public class GameController {
             }
         }
     }
-
 
     private void drawSnake(java.util.List<GameBoard.Point> snake, GameBoard.Direction dir, Color fallback) {
         for (int i = 0; i < snake.size(); i++) {
@@ -379,11 +414,7 @@ public class GameController {
             scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
 
             GameOverController ctrl = loader.getController();
-
-            // Nếu là 2 người chơi, lấy điểm của P2, nếu 1 người chơi thì score2 = 0
             int score2 = gameBoard.isTwoPlayer() ? gameBoard.getScore2() : 0;
-
-            // Truyền đủ 4 tham số
             ctrl.setGameData(gameBoard.getScore(), score2, gameBoard.getDifficulty(), twoPlayer);
 
             Stage stage = (Stage) gameCanvas.getScene().getWindow();
@@ -392,5 +423,4 @@ public class GameController {
             e.printStackTrace();
         }
     }
-
 }

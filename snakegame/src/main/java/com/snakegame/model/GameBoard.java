@@ -48,6 +48,8 @@ public class GameBoard {
     private Difficulty difficulty;
     private Random random;
     private List<Point> wall;
+    private List<Point> obstacles; // danh sách chướng ngại vật
+
 
     public GameBoard(Difficulty difficulty) {
         this(difficulty, false);
@@ -89,15 +91,43 @@ public class GameBoard {
             direction = Direction.RIGHT;
             nextDirection = Direction.RIGHT;
             snake2 = null;
+            generateObstacles(); // tạo chướng ngại vật ngẫu nhiên
+
         }
 
         generateFood();
         if (twoPlayer) generateFood2();
     }
 
+    private void generateObstacles() {
+        obstacles = new ArrayList<>();
+
+        int count;
+        switch (difficulty) {
+            case EASY -> count = 10;
+            case MEDIUM -> count = 20;
+            case HARD -> count = 40;
+            default -> count = 20;
+        }
+
+        for (int i = 0; i < count; i++) {
+            Point p;
+            do {
+                p = new Point(random.nextInt(boardWidth), random.nextInt(boardHeight));
+            } while (snake.contains(p) || p.equals(food)); // tránh trùng rắn và thức ăn
+            obstacles.add(p);
+        }
+    }
+
+
     public void reset() {
         initializeGame();
     }
+
+    public List<Point> getObstacles() {
+        return obstacles;
+    }
+
 
     public void setDirection(Direction newDirection) {
         if ((direction == Direction.UP && newDirection != Direction.DOWN) ||
@@ -175,6 +205,13 @@ public class GameBoard {
         if (snake.contains(newHead) || (twoPlayer && snake2.contains(newHead))) { gameOver = true; return; }
         if (twoPlayer && snake2.contains(newHead2)) { gameOver = true; return; }
 
+        // --- Obstacle collision ---
+        if (!twoPlayer && obstacles != null && obstacles.contains(newHead)) {
+            gameOver = true;
+            return;
+        }
+
+
         // --- Wall collision ---
         if (twoPlayer && wall != null) {
             if (wall.contains(newHead) || wall.contains(newHead2)) { gameOver = true; return; }
@@ -203,12 +240,20 @@ public class GameBoard {
 
     private void generateFood() {
         do {
-            food = new Point(random.nextInt(boardWidth / 2), random.nextInt(boardHeight));
-        } while (snake.contains(food) ||
-                (twoPlayer && snake2 != null && snake2.contains(food)) ||
-                (twoPlayer && wall != null && wall.contains(food)) ||
-                food.equals(snake.get(0)));
+            // Nếu 2 người, thức ăn cho P1 chỉ nằm nửa trái; nếu 1 người thì toàn bản đồ
+            int xRange = twoPlayer ? boardWidth / 2 : boardWidth;
+            int xOffset = twoPlayer ? 0 : 0;
+
+            food = new Point(random.nextInt(xRange) + xOffset, random.nextInt(boardHeight));
+        } while (
+                snake.contains(food)
+                        || (twoPlayer && snake2 != null && snake2.contains(food))
+                        || (twoPlayer && wall != null && wall.contains(food))
+                        || (!twoPlayer && obstacles != null && obstacles.contains(food)) // ✅ tránh chướng ngại vật
+                        || food.equals(snake.get(0))
+        );
     }
+
 
     private void generateFood2() {
         do {

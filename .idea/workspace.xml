@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a205786-9fc3-4269-94ae-d8d4aead7f0c" name="Changes" comment="" />
+    <list default="true" id="3a205786-9fc3-4269-94ae-d8d4aead7f0c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/snakegame/src/main/resources/Sound/die.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/controller/GameController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/database/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/database/DatabaseManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/model/GameBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/model/GameBoard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/database/DatabaseManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/database/DatabaseManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard$Point.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard$Point.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard.class" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,35 +25,58 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "LORENISALONE"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LORENISALONE&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/LORENISALONE/snakegame.git",
-    "accountId": "c1f6b400-136f-4b6c-ac31-62ae22d54895"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LORENISALONE/snakegame.git&quot;,
+    &quot;accountId&quot;: &quot;8939e2be-e336-42f8-8b41-21af88b64394&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="35NUpQEcWIqbt0zoA1hWQWNT0ja" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/project/snakegame/src/main/resources/Sound&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\project\snakegame\src\main\resources\Sound" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="main" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="openjdk-25" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.snakegame.Main" />
+      <module name="snake-game" />
+      <option name="VM_PARAMETERS" value="--module-path &quot;F:\javafx-sdk-25.0.1\lib&quot; --add-modules javafx.controls,javafx.fxml,javafx.media --enable-native-access=javafx.graphics --enable-native-access=javafx.media" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="3a205786-9fc3-4269-94ae-d8d4aead7f0c" name="Changes" comment="" />
