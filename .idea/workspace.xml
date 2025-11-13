@@ -4,18 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a205786-9fc3-4269-94ae-d8d4aead7f0c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/snakegame/src/main/resources/Sound/die.wav" afterDir="false" />
+    <list default="true" id="3a205786-9fc3-4269-94ae-d8d4aead7f0c" name="Changes" comment="thêm âm thanh, chướng ngại vật">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/controller/GameController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/database/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/database/DatabaseManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/model/GameBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/src/main/java/com/snakegame/model/GameBoard.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/controller/GameController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/database/DatabaseManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/database/DatabaseManager.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard$Point.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard$Point.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard.class" beforeDir="false" afterPath="$PROJECT_DIR$/snakegame/target/classes/com/snakegame/model/GameBoard.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +76,19 @@
       <option name="presentableId" value="Default" />
       <updated>1762950204956</updated>
     </task>
+    <task id="LOCAL-00001" summary="thêm âm thanh, chướng ngại vật">
+      <option name="closed" value="true" />
+      <created>1763043989045</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1763043989046</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="thêm âm thanh, chướng ngại vật" />
+    <option name="LAST_COMMIT_MESSAGE" value="thêm âm thanh, chướng ngại vật" />
   </component>
 </project>

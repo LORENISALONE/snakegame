@@ -52,6 +52,9 @@ public class GameController {
     private String[] availableSkins = new String[]{"default"};
     private int currentSkinIndex = 0;
     private final Map<String, Image> images = new HashMap<>();
+    private int previousScoreP1 = 0;
+    private int previousScoreP2 = 0;
+
 
     // ========== INIT ==========
     public void initializeGame(GameBoard.Difficulty difficulty) {
@@ -165,17 +168,25 @@ public class GameController {
 
     // ========== LOOP ==========
     private void setupGameLoop() {
-        previousScore = gameBoard.getScore();
+        // Khởi tạo điểm trước để theo dõi P1 và P2
+        previousScoreP1 = gameBoard.getScore();
+        previousScoreP2 = gameBoard.isTwoPlayer() ? gameBoard.getScore2() : 0;
 
         gameLoop = new Timeline(new KeyFrame(Duration.millis(gameBoard.getDifficulty().getSpeed()), e -> {
             if (!isPaused && !gameBoard.isGameOver()) {
                 gameBoard.update();
 
-                int currentScore = gameBoard.getScore();
-                if (currentScore > previousScore) {
-                    if (eatSound != null) {
-                        eatSound.play();
-                    }
+                int currentScoreP1 = gameBoard.getScore();
+                int currentScoreP2 = gameBoard.isTwoPlayer() ? gameBoard.getScore2() : 0;
+
+                // P1 ăn
+                if (currentScoreP1 > previousScoreP1 && eatSound != null) {
+                    eatSound.play();
+                }
+
+                // P2 ăn
+                if (gameBoard.isTwoPlayer() && currentScoreP2 > previousScoreP2 && eatSound != null) {
+                    eatSound.play();
                 }
 
                 Platform.runLater(() -> {
@@ -193,11 +204,14 @@ public class GameController {
                     Platform.runLater(this::showGameOver);
                 }
 
-                previousScore = currentScore;
+                // Cập nhật lại điểm trước
+                previousScoreP1 = currentScoreP1;
+                previousScoreP2 = currentScoreP2;
             }
         }));
         gameLoop.setCycleCount(Timeline.INDEFINITE);
     }
+
 
     // ========== SOUND ==========
     private void loadSounds() {
