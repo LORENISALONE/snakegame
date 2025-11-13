@@ -1,6 +1,5 @@
 package com.snakegame.model;
 
-import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -24,8 +23,15 @@ public class GameBoard {
         }
     }
 
-    private static final int BOARD_WIDTH = 20;
-    private static final int BOARD_HEIGHT = 20;
+    // default sizes
+    private static final int DEFAULT_BOARD_WIDTH = 20;
+    private static final int DEFAULT_BOARD_HEIGHT = 20;
+    // wider board used when two-player mode is active
+    private static final int TWO_PLAYER_BOARD_WIDTH = 30;
+
+    // instance dimensions (so single-player remains unchanged)
+    private final int boardWidth;
+    private final int boardHeight;
 
     private List<Point> snake;
     private List<Point> snake2; // optional for 2P
@@ -51,6 +57,9 @@ public class GameBoard {
         this.difficulty = difficulty;
         this.twoPlayer = twoPlayer;
         this.random = new Random();
+        // choose dimensions based on mode: only enlarge board for 2-player
+        this.boardWidth = twoPlayer ? TWO_PLAYER_BOARD_WIDTH : DEFAULT_BOARD_WIDTH;
+        this.boardHeight = DEFAULT_BOARD_HEIGHT;
         initializeGame();
     }
 
@@ -62,13 +71,13 @@ public class GameBoard {
         if (twoPlayer) {
             // P1 bên trái
             snake = new ArrayList<>();
-            snake.add(new Point(BOARD_WIDTH / 4, BOARD_HEIGHT / 2));
+            snake.add(new Point(boardWidth / 4, boardHeight / 2));
             direction = Direction.RIGHT;
             nextDirection = Direction.RIGHT;
 
             // P2 bên phải
             snake2 = new ArrayList<>();
-            snake2.add(new Point(3 * BOARD_WIDTH / 4, BOARD_HEIGHT / 2));
+            snake2.add(new Point(3 * boardWidth / 4, boardHeight / 2));
             direction2 = Direction.LEFT;
             nextDirection2 = Direction.LEFT;
 
@@ -76,7 +85,7 @@ public class GameBoard {
         } else {
             // 1P → giữa màn hình, wrap-around
             snake = new ArrayList<>();
-            snake.add(new Point(BOARD_WIDTH / 2, BOARD_HEIGHT / 2));
+            snake.add(new Point(boardWidth / 2, boardHeight / 2));
             direction = Direction.RIGHT;
             nextDirection = Direction.RIGHT;
             snake2 = null;
@@ -126,8 +135,8 @@ public class GameBoard {
 
         if (!twoPlayer) {
             // 1P wrap-around
-            newHead.setX((newHead.getX() % BOARD_WIDTH + BOARD_WIDTH) % BOARD_WIDTH);
-            newHead.setY((newHead.getY() % BOARD_HEIGHT + BOARD_HEIGHT) % BOARD_HEIGHT);
+            newHead.setX((newHead.getX() % boardWidth + boardWidth) % boardWidth);
+            newHead.setY((newHead.getY() % boardHeight + boardHeight) % boardHeight);
         }
 
         // --- Update P2 ---
@@ -144,11 +153,11 @@ public class GameBoard {
                 case RIGHT -> newHead2.setX(newHead2.getX() + 1);
             }
 
-            // Giới hạn bàn cho 2P: P1 [0, BOARD_WIDTH/2), P2 [BOARD_WIDTH/2, BOARD_WIDTH)
-            if (newHead.getX() < 0 || newHead.getX() >= BOARD_WIDTH / 2 ||
-                    newHead.getY() < 0 || newHead.getY() >= BOARD_HEIGHT ||
-                    newHead2.getX() < BOARD_WIDTH / 2 || newHead2.getX() >= BOARD_WIDTH ||
-                    newHead2.getY() < 0 || newHead2.getY() >= BOARD_HEIGHT) {
+            // Giới hạn bàn cho 2P: P1 [0, boardWidth/2), P2 [boardWidth/2, boardWidth)
+            if (newHead.getX() < 0 || newHead.getX() >= boardWidth / 2 ||
+                    newHead.getY() < 0 || newHead.getY() >= boardHeight ||
+                    newHead2.getX() < boardWidth / 2 || newHead2.getX() >= boardWidth ||
+                    newHead2.getY() < 0 || newHead2.getY() >= boardHeight) {
                 gameOver = true;
                 return;
             }
@@ -194,7 +203,7 @@ public class GameBoard {
 
     private void generateFood() {
         do {
-            food = new Point(random.nextInt(BOARD_WIDTH / 2), random.nextInt(BOARD_HEIGHT));
+            food = new Point(random.nextInt(boardWidth / 2), random.nextInt(boardHeight));
         } while (snake.contains(food) ||
                 (twoPlayer && snake2 != null && snake2.contains(food)) ||
                 (twoPlayer && wall != null && wall.contains(food)) ||
@@ -203,7 +212,7 @@ public class GameBoard {
 
     private void generateFood2() {
         do {
-            food2 = new Point(random.nextInt(BOARD_WIDTH / 2) + BOARD_WIDTH / 2, random.nextInt(BOARD_HEIGHT));
+            food2 = new Point(random.nextInt(boardWidth / 2) + boardWidth / 2, random.nextInt(boardHeight));
         } while (snake.contains(food2) ||
                 (twoPlayer && snake2 != null && snake2.contains(food2)) ||
                 (twoPlayer && wall != null && wall.contains(food2)) ||
@@ -220,8 +229,8 @@ public class GameBoard {
     public int getScore2() { return score2; }
     public boolean isTwoPlayer() { return twoPlayer; }
     public Difficulty getDifficulty() { return difficulty; }
-    public int getBoardWidth() { return BOARD_WIDTH; }
-    public int getBoardHeight() { return BOARD_HEIGHT; }
+    public int getBoardWidth() { return boardWidth; }
+    public int getBoardHeight() { return boardHeight; }
     public Direction getDirection() { return direction; }
     public Direction getDirection2() { return direction2; }
 
@@ -249,8 +258,8 @@ public class GameBoard {
 
     private void createWall() {
         wall = new ArrayList<>();
-        int midX = BOARD_WIDTH / 2;
-        for (int y = 0; y < BOARD_HEIGHT; y++) {
+        int midX = boardWidth / 2;
+        for (int y = 0; y < boardHeight; y++) {
             wall.add(new Point(midX, y));
         }
     }
